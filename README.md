@@ -47,7 +47,7 @@ nachgezogen werden muss.
 |---|---|
 | `CLAUDE.md` | Arbeitsregeln für Claude Code (Git-Workflow, Security, Subagenten) + Platzhalter für Projekt-Kontext |
 | `.claude/settings.json` | Permissions, die Claude Code in diesem Repo automatisch erlaubt sind |
-| `LICENSE` / `NOTICE` | Apache License 2.0 |
+| `LICENSE` / `NOTICE` | GNU General Public License v3.0 |
 | `.gitignore` / `.editorconfig` | generische Basis-Regeln |
 | `CONTRIBUTING.md` | Branch-Namen, Commit-Konvention, PR-Ablauf |
 | `SECURITY.md` | Meldeweg für Sicherheitslücken |
@@ -59,6 +59,6 @@ nachgezogen werden muss.
 
 ## Lizenz
 
-Apache License 2.0 — siehe [`LICENSE`](LICENSE). Gilt für alle Projekte, die aus
+GNU General Public License v3.0 — siehe [`LICENSE`](LICENSE). Gilt für alle Projekte, die aus
 dieser Vorlage entstehen, sofern im jeweiligen Repo nicht ausdrücklich anders
 vermerkt.
