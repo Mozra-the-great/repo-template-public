@@ -1,5 +1,13 @@
 name: Claude Code
 
+# Reacts to "@claude" in issues, PR comments and PR reviews. Runs only on such a
+# mention, so it costs nothing until someone asks.
+#
+# OPTIONAL BY DEFAULT: without the CLAUDE_CODE_OAUTH_TOKEN secret the "Check token"
+# step reports enabled=false, every later step is skipped and the job ends green
+# instead of failing red on a mention. The action itself only answers users with
+# write access to the repository.
+
 on:
   issue_comment:
     types: [created]
@@ -9,6 +17,8 @@ on:
     types: [opened, assigned]
   pull_request_review:
     types: [submitted]
+
+permissions: {}
 
 jobs:
   claude:
@@ -25,14 +35,33 @@ jobs:
       id-token: write
       actions: read # Required for Claude to read CI results on PRs
     steps:
+      # The `secrets` context is not available in a job-level `if:`, so presence is
+      # checked here via env. Never echo the value.
+      - name: Check token
+        id: gate
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+        run: |
+          if [ -n "$CLAUDE_CODE_OAUTH_TOKEN" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "CLAUDE_CODE_OAUTH_TOKEN is not set - ignoring the @claude mention."
+          fi
+
       - name: Checkout repository
-        uses: actions/checkout@v4
+        if: steps.gate.outputs.enabled == 'true'
+        # The token stays persisted on purpose: Claude commits and pushes branches
+        # from this checkout when asked to implement something. Every other
+        # workflow in this repo sets persist-credentials: false.
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1  # zizmor: ignore[artipacked]
         with:
           fetch-depth: 1
 
       - name: Run Claude Code
         id: claude
-        uses: anthropics/claude-code-action@v1
+        if: steps.gate.outputs.enabled == 'true'
+        uses: anthropics/claude-code-action@ed670b4cf9de2a5a570d130d2f6197b9e543cd64 # v1.0.240
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
 
