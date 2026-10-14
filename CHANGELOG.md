@@ -20,6 +20,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   `MEMBER` or `COLLABORATOR` (job-level `author_association` gate), so drive-by
   mentions on a public repo cannot start a run. The action's own write-permission
   check remains as the second layer.
+- `claude.yml`: explicit `claude_args` tool allowlist
+  (`--allowedTools Skill,Bash,Read,Edit,Write,Grep,Glob`) instead of the action's
+  unrestricted default; documented in `docs/TEMPLATE-SETUP.md`.
 
 ### Changed
 - `claude-code-review.yml` replaced by the hardened nagellacke version

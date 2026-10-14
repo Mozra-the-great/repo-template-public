@@ -62,6 +62,10 @@ is provided by Actions itself.
    `claude.yml` additionally only starts for mentions from an `OWNER`, `MEMBER` or
    `COLLABORATOR` (job-level `author_association` gate), so drive-by mentions on a
    public repo never reach the action; keep that `if:` when you edit the file.
+   The file also passes an explicit tool allowlist to the action
+   (`claude_args: '--allowedTools Skill,Bash,Read,Edit,Write,Grep,Glob'`) instead
+   of the unrestricted default; widen it deliberately if your project needs more
+   tools rather than removing it.
 7. **Pick a runner** (see next section) before you make any check required.
 8. **Rulesets (D7):** follow `.github/rulesets/README.md` and the order below.
    A rollout PR never changes repository settings.
