@@ -58,6 +58,10 @@ is provided by Actions itself.
    their steps and end **green**, so a new repo has no red check for a missing
    secret. A green `claude-review` without the secret means "skipped", not
    "reviewed".
+
+   `claude.yml` additionally only starts for mentions from an `OWNER`, `MEMBER` or
+   `COLLABORATOR` (job-level `author_association` gate), so drive-by mentions on a
+   public repo never reach the action; keep that `if:` when you edit the file.
 7. **Pick a runner** (see next section) before you make any check required.
 8. **Rulesets (D7):** follow `.github/rulesets/README.md` and the order below.
    A rollout PR never changes repository settings.
