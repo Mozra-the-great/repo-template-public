@@ -1,0 +1,115 @@
+{
+  "_comment": "Label taxonomy as code (opt-in, see .github/workflows/labels.yml). Source of truth: this file. scripts/ci/labels.py sync creates labels, updates color/description and renames labels listed under 'aliases' (their assignment to issues/PRs is kept). No label is ever deleted. 'paths', 'title_prefixes' and 'title_scopes' drive PR labelling; 'issue_tags' and 'title_words' drive issue labelling. 'inherit_prefixes' names the label families a PR copies from the issues it closes. Add your own area/ and topic/ labels plus the matching 'paths' and 'title_scopes' entries; 'require_path_coverage' makes the test suite fail while a tracked file matches no 'paths' pattern - switch it to true once your rules cover the repo.",
+  "require_path_coverage": false,
+
+  "labels": [
+    {"name": "type/bug", "color": "d73a4a", "description": "Something is broken or behaves wrong", "aliases": ["bug"]},
+    {"name": "type/feature", "color": "a2eeef", "description": "New feature or extension of an existing one", "aliases": ["enhancement"]},
+    {"name": "type/security", "color": "b60205", "description": "Vulnerability, data leak or hardening"},
+    {"name": "type/a11y", "color": "7057ff", "description": "Accessibility: screen readers, keyboard, focus, contrast, touch targets"},
+    {"name": "type/ux", "color": "f9a8d4", "description": "Layout, visual polish or usability without a functional defect"},
+    {"name": "type/docs", "color": "0075ca", "description": "Documentation only (README, CHANGELOG, docs/)", "aliases": ["documentation"]},
+    {"name": "type/chore", "color": "c5def5", "description": "Maintenance, refactoring, updates without behaviour change"},
+    {"name": "type/test", "color": "bfe5bf", "description": "Tests only: new, fixed or restructured"},
+    {"name": "type/ci", "color": "5319e7", "description": "Pipeline, workflows, check scripts"},
+
+    {"name": "prio/critical", "color": "b60205", "description": "Now: outage, data loss or active leak"},
+    {"name": "prio/high", "color": "d93f0b", "description": "Tackle soon"},
+    {"name": "prio/medium", "color": "fbca04", "description": "Normal priority"},
+    {"name": "prio/low", "color": "0e8a16", "description": "Some day, when there is time"},
+
+    {"name": "status/triage", "color": "ededed", "description": "New, not yet classified"},
+    {"name": "status/needs-info", "color": "d876e3", "description": "Waiting for an answer, a repro or a measurement"},
+    {"name": "status/blocked", "color": "000000", "description": "Blocked by another issue or an external factor"},
+    {"name": "status/in-progress", "color": "1d76db", "description": "Being worked on"},
+    {"name": "status/duplicate", "color": "cfd3d7", "description": "Duplicate, see linked issue", "aliases": ["duplicate"]},
+    {"name": "status/wontfix", "color": "ffffff", "description": "Deliberately not done", "aliases": ["wontfix"]},
+
+    {"name": "area/ci", "color": "5319e7", "description": "GitHub Actions, scripts/ci/, rulesets"},
+    {"name": "area/docs", "color": "0075ca", "description": "README, CLAUDE.md, CONTRIBUTING, docs/"},
+
+    {"name": "dependencies", "color": "0366d6", "description": "Pull requests that update a dependency file"},
+    {"name": "Trash Issue", "color": "f9d0c4", "description": "Raw idea/note, needs to be worked out before implementation"}
+  ],
+
+  "paths": {
+    ".github/**": ["area/ci", "type/ci"],
+    "scripts/ci/**": ["area/ci", "type/ci"],
+    ".github/dependabot.yml": ["dependencies"],
+
+    "*.md": ["area/docs"],
+    "LICENSE": ["area/docs"],
+    "NOTICE": ["area/docs"],
+    ".claude/**": ["area/docs"],
+    "docs/**": ["area/docs"],
+
+    "package-lock.json": ["dependencies"],
+    "requirements*.txt": ["dependencies"],
+    "poetry.lock": ["dependencies"],
+    "uv.lock": ["dependencies"],
+
+    "*.gitignore": ["type/chore"],
+    ".editorconfig": ["type/chore"],
+    ".gitattributes": ["type/chore"],
+    ".gitleaks.toml": ["type/security"]
+  },
+
+  "title_prefixes": {
+    "fix": ["type/bug"],
+    "feat": ["type/feature"],
+    "docs": ["type/docs"],
+    "chore": ["type/chore"],
+    "refactor": ["type/chore"],
+    "perf": ["type/chore"],
+    "build": ["type/chore"],
+    "deps": ["type/chore", "dependencies"],
+    "ci": ["type/ci"],
+    "test": ["type/test"],
+    "style": ["type/ux"],
+    "ui": ["type/ux"],
+    "a11y": ["type/a11y"],
+    "sec": ["type/security"],
+    "security": ["type/security"]
+  },
+
+  "title_scopes": {
+    "ci": ["area/ci"],
+    "actions": ["area/ci", "dependencies"],
+    "docs": ["area/docs"],
+    "deps": ["dependencies"],
+    "a11y": ["type/a11y"],
+    "security": ["type/security"]
+  },
+
+  "issue_tags": {
+    "ci": ["area/ci"],
+    "docs": ["area/docs"],
+    "security": ["type/security"],
+    "a11y": ["type/a11y"],
+    "accessibility": ["type/a11y"],
+    "bug": ["type/bug"],
+    "feat": ["type/feature"],
+    "feature": ["type/feature"],
+    "ui": ["type/ux"],
+    "ux": ["type/ux"],
+    "critical": ["prio/critical"],
+    "high": ["prio/high"],
+    "medium": ["prio/medium"],
+    "low-medium": ["prio/medium"],
+    "low": ["prio/low"]
+  },
+
+  "title_words": {
+    "bug": ["type/bug"],
+    "feat": ["type/feature"],
+    "feature": ["type/feature"],
+    "new feature": ["type/feature"],
+    "ui": ["type/ux"],
+    "readme": ["area/docs"],
+    "read me": ["area/docs"],
+    "codeql": ["type/security"],
+    "dependabot": ["dependencies"]
+  },
+
+  "inherit_prefixes": ["type/", "prio/", "area/", "topic/"]
+}

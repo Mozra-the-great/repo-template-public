@@ -1,0 +1,104 @@
+name: Labels
+
+# Label taxonomy as code (opt-in). Source of truth is .github/labels.json;
+# scripts/ci/labels.py enforces it. Everything is additive: no label is ever
+# deleted and none is ever removed from an issue/PR.
+#
+# OPT-IN: the job runs only when the repository variable LABELS_ENABLED is 'true'
+# (Settings -> Secrets and variables -> Actions -> Variables). Until then every
+# event ends with a skipped job, which costs no runner minutes. Reason: the job
+# starts on every issue and PR event plus a daily cron, which only pays off in a
+# repo that actually uses issues, and it is a lot of one-minute jobs in a private
+# repo. To drop the feature entirely, delete this file, .github/labels.json and
+# scripts/ci/ (the `build` job skips the label tests when they are gone).
+#
+# Deliberately without a third-party action (github-label-sync,
+# actions/labeler): the `gh` CLI is preinstalled on ubuntu-latest, the script is
+# pure standard library and tested in CI (`build` job) -- one dependency less to
+# pin and keep current.
+
+# pull_request_target is justified below: only code from main runs, the PR is never
+# checked out (#226 in homelab-infra).
+on:  # zizmor: ignore[dangerous-triggers]
+  push:
+    branches: [main]
+    paths:
+      - .github/labels.json
+      - scripts/ci/labels.py
+      - .github/workflows/labels.yml
+  # pull_request_target rather than pull_request: the job has write access, and
+  # under pull_request it would run labels.py *from the PR* -- a PR could change
+  # the script and make arbitrary `gh` calls with the token. pull_request_target
+  # checks out the base branch; only code already on main runs. The PR is only
+  # read through the API (title, file list, linked issues), never checked out,
+  # which also makes fork PRs safe.
+  pull_request_target:
+    branches: [main]
+    types: [opened, reopened, synchronize, edited]
+  issues:
+    types: [opened, reopened, edited]
+  # Daily sync as a safety net: a merge performed with GITHUB_TOKEN (auto-merge)
+  # does not trigger a push event, so the push trigger above would miss it.
+  schedule:
+    - cron: "23 4 * * *"
+  workflow_dispatch:
+    inputs:
+      backfill:
+        description: "Label open issues and PRs after syncing"
+        type: boolean
+        default: true
+      include_closed:
+        description: "Backfill closed issues and merged/closed PRs as well"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: labels-${{ github.event.pull_request.number || github.event.issue.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  labels:
+    # Opt-in switch, see the header. A job-level skip is fine here: this check is
+    # not a required status check.
+    if: ${{ vars.LABELS_ENABLED == 'true' }}
+    runs-on: ubuntu-latest
+    # A backfill with include_closed walks every issue and PR ever opened.
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GH_REPO: ${{ github.repository }}
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+      ISSUE_NUMBER: ${{ github.event.issue.number }}
+      INCLUDE_CLOSED: ${{ inputs.include_closed }}
+    steps:
+      # Always main, whatever the event: only the reviewed labels.py from main
+      # runs. For workflow_dispatch github.ref would otherwise be the branch
+      # picked in the UI, for pull_request_target the PR's base branch.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: refs/heads/main
+          persist-credentials: false
+      - name: Sync labels
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+        run: python3 scripts/ci/labels.py sync
+      - name: Label PR
+        if: github.event_name == 'pull_request_target'
+        run: python3 scripts/ci/labels.py pr "$PR_NUMBER"
+      - name: Label issue
+        if: github.event_name == 'issues'
+        run: python3 scripts/ci/labels.py issue "$ISSUE_NUMBER"
+      - name: Backfill issues and PRs
+        if: github.event_name == 'workflow_dispatch' && inputs.backfill
+        run: |
+          if [ "$INCLUDE_CLOSED" = "true" ]; then
+            python3 scripts/ci/labels.py backfill --all
+          else
+            python3 scripts/ci/labels.py backfill
+          fi

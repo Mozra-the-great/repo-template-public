@@ -1,0 +1,80 @@
+name: CI
+
+# Stack-neutral skeleton. The job id `build` is the stable name of the required
+# status check: keep it, and add your stack's steps below by uncommenting ONE of
+# the marked blocks (or adding your own). Delete the blocks you do not need.
+#
+# `build` must pass on every PR, so this workflow has NO workflow-level `paths:`
+# filter (convention C1): a required check whose workflow does not start is
+# reported as pending forever, not as skipped. If a step should only run for
+# some files, put the condition on the step or job, not on the trigger.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    # Public repo: hosted runner, free. Private repo: see docs/TEMPLATE-SETUP.md
+    # (decision D1) before you rely on this - hosted minutes may be exhausted, and
+    # a required check that cannot start blocks every PR (convention C4).
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # ── Labels-as-code tests (opt-in set, see .github/labels.json) ────────────
+      # Runs only while the set is present, so deleting scripts/ci/ needs no edit
+      # here. Standard library only: the runner's python3 is enough.
+      - name: Test label script
+        if: ${{ hashFiles('scripts/ci/test_labels.py') != '' }}
+        run: python3 -m unittest discover -s scripts/ci -p "test_*.py"
+
+      # ── Stack block: Python ───────────────────────────────────────────────────
+      # - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+      #   with:
+      #     python-version: '3.12'
+      # - name: Install
+      #   run: python -m pip install -r requirements.txt
+      # - name: Lint
+      #   run: python -m pip install ruff && ruff check .
+      # - name: Test
+      #   run: python -m unittest discover   # or: python -m pytest
+
+      # ── Stack block: Node ─────────────────────────────────────────────────────
+      # - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      #   with:
+      #     node-version: '22'
+      # - name: Install
+      #   # npm ci, not npm install: it installs the lockfile exactly and fails if
+      #   # package.json and the lockfile disagree, so a green build means something.
+      #   run: npm ci
+      # - name: Build
+      #   run: npm run build --if-present
+      # - name: Test
+      #   run: npm test --if-present
+
+      # ── Stack block: Shell scripts ────────────────────────────────────────────
+      # shellcheck is preinstalled on ubuntu-latest.
+      # - name: ShellCheck
+      #   run: git ls-files -z '*.sh' | xargs -0 -r shellcheck
+      # - name: Syntax check
+      #   run: git ls-files -z '*.sh' | xargs -0 -r -n1 sh -n
+
+      # Keeps the job meaningful (and green) while no stack block is enabled yet.
+      - name: Repository sanity
+        run: |
+          echo "tracked files: $(git ls-files | wc -l)"
