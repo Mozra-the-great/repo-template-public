@@ -15,6 +15,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   template under `.github/rulesets/` (not auto-applied).
 - `docs/TEMPLATE-SETUP.md`: secrets, runner choice, rulesets and costs of a new repo.
 
+### Fixed
+- `claude.yml`: the job only starts for `@claude` mentions from an `OWNER`,
+  `MEMBER` or `COLLABORATOR` (job-level `author_association` gate), so drive-by
+  mentions on a public repo cannot start a run. The action's own write-permission
+  check remains as the second layer.
+
 ### Changed
 - `claude-code-review.yml` replaced by the hardened nagellacke version
   (`--comment`, inline-comment allowlist, `--disallowedTools`, concurrency group,
