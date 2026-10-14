@@ -81,8 +81,11 @@ would run its code on your machine.
 
 If you create a **private** repo from this template, the situation is different
 (decisions D1/D2): hosted Actions minutes were exhausted on 2026-09-24 and GitHub
-then started no hosted job at all, and whether they are available again is
-unknown (the billing API needs the `user` scope). In that case:
+then started no hosted job at all, and whether they are available again is not
+settled (the billing API needs the `user` scope). Observation, not an answer: on
+2026-10-14 the CI of the private sibling's own PR did start on hosted runners and
+passed, so minutes were available at that moment; that can change with the
+billing cycle or the spending limit. If hosted minutes are unavailable:
 
 - Every workflow says `runs-on: ubuntu-latest` and will not start without hosted
   minutes.
