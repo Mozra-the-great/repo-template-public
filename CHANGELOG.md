@@ -15,6 +15,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   template under `.github/rulesets/` (not auto-applied).
 - `docs/TEMPLATE-SETUP.md`: secrets, runner choice, rulesets and costs of a new repo.
 
+### Changed
+- `docs/TEMPLATE-SETUP.md`, README and ruleset README: runner decisions of
+  2026-11-04 (D1: hosted runners are the default, the own runner on CT121 only for
+  private homelab jobs or as fallback; D2: hosted minutes for private repos are
+  available; D6: workflows are copied per repo, no central reusable workflows).
+
 ### Fixed
 - `claude.yml`: the job only starts for `@claude` mentions from an `OWNER`,
   `MEMBER` or `COLLABORATOR` (job-level `author_association` gate), so drive-by
