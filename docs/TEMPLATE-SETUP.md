@@ -5,7 +5,7 @@ before its CI is useful. **Delete it from the new repo once you are done**, or
 keep it as a record. Nothing here is applied automatically: secrets, rulesets
 and repository settings are owner decisions and never part of a workflow PR.
 
-The building blocks (B1-B9), conventions (C1-C11) and open decisions (D1-D7)
+The building blocks (B1-B9), conventions (C1-C11) and decisions (D1-D7)
 referenced below are defined in the private umbrella issue
 `Mozra-the-great/repo-template#2`.
 
@@ -87,26 +87,25 @@ repositories, so every workflow works as shipped and no runner decision is
 needed. Never register a self-hosted runner for a public repo (C7): a fork PR
 would run its code on your machine.
 
-If you create a **private** repo from this template, the situation is different
-(decisions D1/D2): hosted Actions minutes were exhausted on 2026-09-24 and GitHub
-then started no hosted job at all, and whether they are available again is not
-settled (the billing API needs the `user` scope). Observation, not an answer: on
-2026-10-14 the CI of the private sibling's own PR did start on hosted runners and
-passed, so minutes were available at that moment; that can change with the
-billing cycle or the spending limit. If hosted minutes are unavailable:
+If you create a **private** repo from this template, the decisions of
+2026-11-04 (umbrella repo-template#2, D1/D2/D6) apply:
 
-- Every workflow says `runs-on: ubuntu-latest` and will not start without hosted
-  minutes.
-- Do **not** make `build`, `workflow-lint` or `gitleaks` required checks until a
-  test PR proves they start (C4): a required check that cannot start blocks
-  every PR.
-- D1 options: (a) register a self-hosted runner per repository and change
-  `runs-on` in every workflow (private repos only, no secrets, no LAN
-  credentials; declare the label to actionlint in `.github/actionlint.yaml`, and
-  the Claude workflows also need the Claude Code CLI installed on that runner);
-  (b) markdown-only repos use a local pre-commit hook only; (c) a spending
-  limit; (d) make the repo public.
-- Validate locally (see [Local validation](#local-validation)).
+- **Hosted runners are the default.** Keep `runs-on: ubuntu-latest`; hosted
+  Actions minutes for private repositories are available (D2). The required
+  checks (`build`, `workflow-lint`, `gitleaks`) can be made required as soon as
+  they ran green on a test PR (C4).
+- **The own runner on CT121 (label `pr-runner`) is the exception (D1)**: only for
+  private homelab jobs or as a fallback if hosted minutes ever run out again.
+  Change `runs-on` in every workflow of that repo, declare the label to actionlint
+  in `.github/actionlint.yaml`, and install the Claude Code CLI on the runner for
+  the Claude workflows. Private repos only, no secrets, no LAN credentials in PR
+  jobs.
+- **Workflows are copied into each repository** (D6); there are no central
+  reusable workflows.
+- If hosted minutes do run out, do not make `build`, `workflow-lint` or
+  `gitleaks` required checks (C4): a required check that cannot start blocks
+  every PR. Switch to the fallback runner or validate locally (see
+  [Local validation](#local-validation)).
 
 ## Code and secret scanning
 
@@ -170,9 +169,10 @@ python3 -m unittest discover -s scripts/ci -p "test_*.py"
 (On Windows the binaries are in `.venv-lint\Scripts\`.) `.venv-lint/` is
 git-ignored.
 
-## Open decisions this template does not make
+## Decisions this template does not make
 
-D1 private-repo runner strategy, D2 hosted-minutes status, D3 which repos get
-the Claude review, D6 copy vs. central reusable workflows, D7 rulesets and
-`delete_branch_on_merge`. The template ships working defaults for a public
-repo and states the caveats for a private one; it decides none of them.
+D3 which repos get the Claude review and D7 rulesets and
+`delete_branch_on_merge` are decided per repo (see umbrella repo-template#2); the
+runner strategy (D1), the hosted-minutes status (D2) and the rollout method (D6)
+are decided, see "Runner choice" above. The template ships working defaults for a
+public repo and states the caveats for a private one.
