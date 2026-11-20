@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   checks, two opus bug hunters, an opus security reviewer after Anthropic's
   `/security-review`, and an opus validator per finding; Sonnet only orchestrates
   and posts. Replaces the code-review plugin run.
+- CI: `claude-code-action` pinned to v1.0.284 in `claude.yml` and `claude-code-review.yml` (undoes an accidental Dependabot downgrade to v1.0.275).
 - `docs/TEMPLATE-SETUP.md`, README and ruleset README: runner decisions of
   2026-11-04 (D1: hosted runners are the default, the own runner on CT121 only for
   private homelab jobs or as fallback; D2: hosted minutes for private repos are
